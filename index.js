@@ -2,6 +2,8 @@ const express = require('express');
 const app = express();
 const port = 3000;
 
+app.use(express.json());
+
 const tasks = [
   {id: 1, title: "Finish the task", status: false},
   {id: 2, title: "Go to the gym", status: false},
@@ -22,11 +24,6 @@ app.get('/tasks/:id', (req, res) => {
   res.json(requestedTask);
 });
 
-app.post('/tasks', (req, res) => {
-  res.json({title: "buy milk"});
-  
-});
-
 app.get('/', (req, res) => {
   res.json({
     name: "Task API",
@@ -34,6 +31,25 @@ app.get('/', (req, res) => {
     endpoints: "[/tasks]"
   });
 });
+
+app.post('/tasks', (req, res) => {
+  const { title } = req.body;
+  if (!title || title.trim() === "") {
+    return res.status(400).json({ error: "Title is required and cannot be empty" });
+  }
+  const newId = tasks.length > 0 ? Math.max(...tasks.map(t => t.id)) + 1 : 1;
+
+  const newTask = {
+    id: newId,
+    title: title.trim(),
+    done: false // New tasks start out NOT done
+  };
+
+  tasks.push(newTask);
+
+  res.status(201).json(newTask);
+});
+
 
 app.get('/health', (req, res) => {
   res.json({status: "okay"});
