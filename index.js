@@ -1,8 +1,12 @@
 const express = require('express');
+const swaggerUi = require('swagger-ui-express');
+const openapiDoc = require('./openapi.json');
+
 const app = express();
 const port = 3000;
 
 app.use(express.json());
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(openapiDoc));
 
 const tasks = [
   {id: 1, title: "Finish the task", done: false},
@@ -41,7 +45,7 @@ app.post('/tasks', (req, res) => {
   const newTask = {
     id: newId,
     title: title.trim(),
-    done: false // New tasks start out NOT done
+    done: false
   };
 
   tasks.push(newTask);
