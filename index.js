@@ -49,8 +49,8 @@ app.post('/tasks', function (req, res) {
     res.status(400).json({ error: 'Title is required and cannot be empty' });
     return;
   }
-  const insert = db.prepare('INSERT INTO tasks (title) VALUES (?)');
-  const result = insert.run(title.trim());
+  const insert = db.prepare('INSERT INTO tasks (title, done) VALUES (?, ?)');
+  const result = insert.run(title.trim(), 0);
   const newTask = db.prepare('SELECT * FROM tasks WHERE id = ?').get(result.lastInsertRowid);
   res.status(201).json(newTask);
 });
