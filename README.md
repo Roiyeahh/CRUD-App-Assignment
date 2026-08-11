@@ -74,3 +74,10 @@ Result:
 | id | title           | done |
 |----|-----------------|------|
 | 3  | Complete week 1 | 1    |
+
+## Database Setup
+
+To start the local PostgreSQL database, run:
+
+```bash
+docker run --name taskdb -e POSTGRES_PASSWORD=dev -e POSTGRES_DB=tasks -p 5432:5432 -v taskdata:/var/lib/postgresql/data -d postgres:17
