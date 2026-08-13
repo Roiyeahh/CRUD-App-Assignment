@@ -1,13 +1,32 @@
+require('dotenv').config();
 const express = require('express');
 const swaggerUi = require('swagger-ui-express');
 const openapiDoc = require('./openapi.json');
 const { pool, initDb } = require('./db');
+const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 const port = 3000;
 
 app.use(express.json());
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(openapiDoc));
+
+//Supabase Create Client
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_KEY
+);
+
+// Verify Supabase connectivity. A missing table (code 42P01) still means
+// the client reached the project, so only network/auth errors are fatal.
+async function checkSupabase() {
+  const { error } = await supabase.from('tasks').select('id').limit(1);
+  const missingTable = error && (error.code === '42P01' || error.code === 'PGRST205');
+  if (error && !missingTable) {
+    throw new Error('Supabase connection failed: ' + error.message);
+  }
+}
+
 
 // GET /tasks - Fetch all tasks
 app.get('/tasks', async function (req, res) {
@@ -118,9 +137,13 @@ app.get('/health', function (req, res) {
 // Server Initialization
 async function startServer() {
   await initDb();
+  await checkSupabase();
   app.listen(port, function () {
+    console.log('Server running and connected to Supabase');
     console.log('Example app listening on port ' + port);
   });
 }
+
+module.exports = { supabase };
 
 startServer();
